@@ -1,0 +1,33 @@
+<div class="convert">
+   <div class="convert-error" #errorModal>
+      Change the currency
+   </div>
+   <div class="convert-wrapper">
+      <div class="convert-first">
+         <div class="convert-info">{{firstSelect}}</div>
+         <div class="convert-details">
+            <input type="number" class="first-convert" min="0" [(ngModel)]="firstValue"
+               (ngModelChange)="checkResult($event)" placeholder="Value" #firstInput>
+            <select name="currency" class="convert-select" [(ngModel)]="firstSelect"
+               (ngModelChange)="checkResult($event)">
+               <option value="USD">USD</option>
+               <option value="EUR">EUR</option>
+               <option value="UAH">UAH</option>
+            </select>
+         </div>
+      </div>
+      <div class="convert-second">
+         <div class="convert-info">{{secondSelect}}</div>
+         <div class="convert-details">
+            <input type="number" class="second-convert" [(ngModel)]="secondValue"
+               (ngModelChange)="checkResult($event,true)" placeholder="Value" #secondInput>
+            <select name="currency" class="convert-select" [(ngModel)]="secondSelect"
+               (ngModelChange)="checkResult($event)">
+               <option value="UAH">UAH</option>
+               <option value="EUR">EUR</option>
+               <option value="USD">USD</option>
+            </select>
+         </div>
+      </div>
+   </div>
+</div>
