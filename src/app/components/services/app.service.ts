@@ -1,25 +1,30 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { HttpHeaders } from '@angular/common/http';
+import { DataApi } from '../models/data.model';
+import { Currency } from '../models/currency.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppService {
-  exchangeRate = new Subject<any>();
   constructor(private http: HttpClient) {}
 
-  setApiData() {
-    this.http
-      .get('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json')
-      .subscribe((res: any) => {
-        const result = res.filter((item: any) => {
-          if (item.cc === 'USD' || item.cc === 'EUR') {
-            return true;
-          }
-          return false;
-        });
-        this.exchangeRate.next(result);
-      });
+  setApiData(firstValue:string, secondValue:string, amount:number) {
+    const httpOptions = {
+      headers: new HttpHeaders().set(
+        'apikey',
+        'PSBDIhDKw5W9ccc9jrVMdkT9t9P4iG2E'
+      ),
+    };
+    return this.http
+      .get<DataApi>(
+        `https://api.apilayer.com/exchangerates_data/convert?to=${secondValue}&from=${firstValue}&amount=${amount}`,
+        httpOptions
+      )
+  }
+  getEurUsdData() {
+    return this.http
+      .get<Currency[]>('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json')
   }
 }

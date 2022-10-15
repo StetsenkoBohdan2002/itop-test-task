@@ -8,7 +8,6 @@ import { Component, Input, OnInit } from '@angular/core';
 export class HeaderInfoComponent implements OnInit {
   @Input() info:any;
   constructor() { }
-
   ngOnInit(): void {
   }
 

@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AppService } from './components/services/app.service';
+import { DataApi } from './components/models/data.model';
 
 @Component({
   selector: 'app-root',
@@ -9,13 +10,10 @@ import { AppService } from './components/services/app.service';
 export class AppComponent implements OnInit {
   title = 'itop';
   apiData!: any;
-  constructor(private appService: AppService) {}
+  constructor() {
 
-  ngOnInit() {
-    this.appService.setApiData();
-    this.appService.exchangeRate.subscribe((res) => {
-      this.apiData = res;
-      console.log(res)
-    });
+  }
+
+  ngOnInit() {  
   }
 }

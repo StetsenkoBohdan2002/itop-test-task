@@ -1,33 +1,39 @@
 <div class="convert">
-   <div class="convert-error" #errorModal>
-      Change the currency
+   <div class="convert-error" *ngIf="loading">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+         style="margin: auto; background: none; display: block; shape-rendering: auto;" width="434px" height="434px"
+         viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+         <circle cx="50" cy="50" fill="none" stroke="#5be1bd" stroke-width="8" r="38"
+            stroke-dasharray="179.0707812546182 61.690260418206066">
+            <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="0.5681818181818182s"
+               values="0 50 50;360 50 50" keyTimes="0;1" />
+         </circle>
+      </svg>
    </div>
    <div class="convert-wrapper">
       <div class="convert-first">
-         <div class="convert-info">{{firstSelect}}</div>
-         <div class="convert-details">
-            <input type="number" class="first-convert" min="0" [(ngModel)]="firstValue"
-               (ngModelChange)="checkResult($event)" placeholder="Value" #firstInput>
-            <select name="currency" class="convert-select" [(ngModel)]="firstSelect"
-               (ngModelChange)="checkResult($event)">
+         <!-- <div class="convert-info">{{firstSelect}}</div> -->
+         <form [formGroup]="firstForm">
+            <input type="number" class="first-convert" min="0" placeholder="Value" formControlName="firstInput"
+               (input)="checkResult()" [readOnly]="loading">
+            <select name="currency" class="convert-select" formControlName="firstSelect" (change)="checkResult()">
                <option value="USD">USD</option>
                <option value="EUR">EUR</option>
                <option value="UAH">UAH</option>
             </select>
-         </div>
+         </form>
       </div>
       <div class="convert-second">
-         <div class="convert-info">{{secondSelect}}</div>
-         <div class="convert-details">
-            <input type="number" class="second-convert" [(ngModel)]="secondValue"
-               (ngModelChange)="checkResult($event,true)" placeholder="Value" #secondInput>
-            <select name="currency" class="convert-select" [(ngModel)]="secondSelect"
-               (ngModelChange)="checkResult($event)">
+         <!-- <div class="convert-info">{{secondSelect}}</div> -->
+         <form [formGroup]="secondForm">
+            <input type="number" class="second-convert" placeholder="Value" formControlName="secondInput"
+               (input)="checkResult(true)" [readOnly]="loading">
+            <select name="currency" class="convert-select" formControlName="secondSelect" (change)="checkResult()">
                <option value="UAH">UAH</option>
                <option value="EUR">EUR</option>
                <option value="USD">USD</option>
             </select>
-         </div>
+         </form>
       </div>
    </div>
 </div>

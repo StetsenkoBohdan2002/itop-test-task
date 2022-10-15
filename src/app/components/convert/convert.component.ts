@@ -1,4 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { AppService } from '../services/app.service';
 
 @Component({
@@ -6,110 +8,69 @@ import { AppService } from '../services/app.service';
   templateUrl: './convert.component.html',
   styleUrls: ['./convert.component.scss'],
 })
-export class ConvertComponent implements OnInit {
-  firstValue!: any;
-  secondValue!: any;
-  firstSelect: string = 'USD';
-  secondSelect: string = 'UAH';
-  usd!: any;
-  eur!: any;
-  @ViewChild('firstInput') firstInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('secondInput') secondInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('errorModal') errorModal!: ElementRef<HTMLElement>;
+export class ConvertComponent implements OnInit, OnDestroy {
+  firstForm: FormGroup = new FormGroup({
+    firstInput: new FormControl(''),
+    firstSelect: new FormControl('USD'),
+  });
+  secondForm: FormGroup = new FormGroup({
+    secondInput: new FormControl(''),
+    secondSelect: new FormControl('UAH'),
+  });
+  loading:boolean = false;
+  private destroy$: Subject<void> = new Subject<void>();
 
   constructor(private appService: AppService) {}
 
-  ngOnInit(): void {
-    this.appService.exchangeRate.subscribe((res) => {
-      this.usd = res[0];
-      this.eur = res[1];
-    });
+  ngOnInit(): void {}
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
-  changeDisable(
-    firstElement: ElementRef<HTMLInputElement>,
-    secondElement: ElementRef<HTMLInputElement>,
-    value: boolean
+  mainFunction(
+    mainInput: number,
+    mainForm: FormGroup,
+    name: string,
+    reverse: boolean
   ) {
-    if (value) {
-      this.errorModal.nativeElement.classList.add('show');
-    } else {
-      this.errorModal.nativeElement.classList.remove('show');
+    if (!mainInput) {
+      mainForm.setControl('secondInput', new FormControl());
+      return;
     }
-    firstElement.nativeElement.disabled = value;
-    secondElement.nativeElement.disabled = value;
-  }
-  resetValue() {
-    this.secondValue = '';
-    this.firstValue = '';
-  }
-  checkResult(value: any, reverse = false) {
-    if (value) {
-      if (this.firstSelect === this.secondSelect) {
-        this.resetValue();
-        this.changeDisable(this.firstInput, this.secondInput, true);
-        return;
-      }
-      this.changeDisable(this.firstInput, this.secondInput, false);
-      if (this.firstValue === this.secondValue) {
-        return;
-      }
-      if (this.firstSelect === 'USD') {
-        if (this.secondSelect === 'UAH') {
-          if (reverse) {
-            this.firstValue = (this.secondValue / this.usd.rate).toFixed(4);
-          } else {
-            this.secondValue = (this.firstValue * this.usd.rate).toFixed(4);
-          }
-        } else if (this.secondSelect === 'EUR') {
-          if (reverse) {
-            this.firstValue = (
-              (this.eur.rate * this.secondValue) /
-              this.usd.rate
-            ).toFixed(4);
-          } else {
-            this.secondValue = (
-              (this.usd.rate * this.firstValue) /
-              this.eur.rate
-            ).toFixed(4);
-          }
-        }
-      } else if (this.firstSelect === 'EUR') {
-        if (this.secondSelect === 'UAH') {
-          if (reverse) {
-            this.firstValue = (this.secondValue / this.eur.rate).toFixed(4);
-          } else {
-            this.secondValue = (this.firstValue * this.eur.rate).toFixed(4);
-          }
-        } else if (this.secondSelect === 'USD') {
-          if (reverse) {
-            this.firstValue = (
-              (this.secondValue * this.usd.rate) /
-              this.eur.rate
-            ).toFixed(4);
-          } else {
-            this.secondValue = (
-              (this.firstValue * this.eur.rate) /
-              this.usd.rate
-            ).toFixed(4);
-          }
-        }
-      } else {
-        if (this.secondSelect === 'EUR') {
-          if (reverse) {
-            this.firstValue = (this.secondValue * this.eur.rate).toFixed(4);
-          } else {
-            this.secondValue = (this.firstValue / this.eur.rate).toFixed(4);
-          }
-        } else if (this.secondSelect === 'USD') {
-          if (reverse) {
-            this.firstValue = (this.secondValue * this.usd.rate).toFixed(4);
-          } else {
-            this.secondValue = (this.firstValue / this.usd.rate).toFixed(4);
-          }
-        }
-      }
+    this.loading = true;
+    if (!reverse) {
+      this.appService
+        .setApiData(
+          this.firstForm.value.firstSelect,
+          this.secondForm.value.secondSelect,
+          mainInput
+        )
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((res) => {
+          mainForm.setControl(name, new FormControl(res.result));
+          this.loading = false;
+        });
     } else {
-      this.resetValue();
+      this.appService
+        .setApiData(
+          this.secondForm.value.secondSelect,
+          this.firstForm.value.firstSelect,
+          mainInput
+        )
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((res) => {
+          mainForm.setControl(name, new FormControl(res.result));
+          this.loading = false;
+        });
+    }
+  }
+  checkResult(reverse = false) {
+    const { firstInput } = this.firstForm.value;
+    const { secondInput } = this.secondForm.value;
+    if (!reverse) {
+      this.mainFunction(firstInput, this.secondForm, 'secondInput', reverse);
+    } else {
+      this.mainFunction(secondInput, this.firstForm, 'firstInput', reverse);
     }
   }
 }
